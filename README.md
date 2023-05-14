@@ -1,2 +1,2 @@
 # sitemap
-Sitemap Automatic
+Sitemap Automatic For Blogspot
