@@ -1,136 +1,111 @@
 /**
- * Universal & Professional Blogger HTML Sitemap / Table of Contents
- * Repository: https://github.com/edsaed/sitemap
- * Features: Auto-pagination (>500 posts), Search filter, Category grouping, Clean DOM
+ * Universal HTML Sitemap for Blogger
+ * Repo: https://github.com/edsaed/sitemap
  */
 
-(function () {
-  'use strict';
+var allEntries = [];
 
-  let allEntries = [];
-  let categories = {};
+// Callback Global untuk Feed Blogger
+window.fetchBloggerFeed = function (data) {
+  var container = document.getElementById('sitemap-container');
+  if (!container) return;
 
-  // 1. Render Tampilan Utama
-  function renderSitemapUI() {
-    const container = document.getElementById('sitemap-container');
-    if (!container) return;
+  var entries = (data.feed && data.feed.entry) ? data.feed.entry : [];
+  allEntries = allEntries.concat(entries);
 
-    let html = `
-      <div class="sitemap-controls">
-        <input type="text" id="sitemap-search" placeholder="Cari judul artikel..." onkeyup="window.filterSitemapPosts()" />
-        <span class="sitemap-stats">Total: <strong id="sitemap-total-count">${allEntries.length}</strong> Artikel</span>
-      </div>
-      <div id="sitemap-content"></div>
-    `;
+  var totalResults = parseInt(data.feed.openSearch$totalResults.$t, 10);
+  var startIndex = parseInt(data.feed.openSearch$startIndex.$t, 10);
+  var itemsPerPage = parseInt(data.feed.openSearch$itemsPerPage.$t, 10);
 
-    container.innerHTML = html;
-    buildCategoryData(allEntries);
-    displaySitemap();
-  }
-
-  // 2. Olah Data Kategori & Sorting
-  function buildCategoryData(entries) {
-    categories = {};
-
-    entries.forEach((entry) => {
-      const title = entry.title.$t;
-      const published = entry.published.$t.substring(0, 10);
-
-      let postUrl = '';
-      if (entry.link) {
-        const altLink = entry.link.find((l) => l.rel === 'alternate');
-        if (altLink) postUrl = altLink.href;
-      }
-
-      const labels = entry.category
-        ? entry.category.map((c) => c.term)
-        : ['Lainnya'];
-
-      labels.forEach((label) => {
-        if (!categories[label]) categories[label] = [];
-        categories[label].push({ title, url: postUrl, date: published });
-      });
-    });
-  }
-
-  // 3. Tampilkan List Artikel
-  function displaySitemap(filterText = '') {
-    const contentBox = document.getElementById('sitemap-content');
-    if (!contentBox) return;
-
-    let html = '';
-    const sortedCategories = Object.keys(categories).sort();
-    let totalVisible = 0;
-
-    sortedCategories.forEach((category) => {
-      const filteredPosts = categories[category].filter((post) =>
-        post.title.toLowerCase().includes(filterText.toLowerCase())
-      );
-
-      if (filteredPosts.length > 0) {
-        totalVisible += filteredPosts.length;
-        html += `<div class="sitemap-category-box">`;
-        html += `<h3 class="sitemap-cat-title"><a href="/search/label/${encodeURIComponent(category)}" target="_blank" rel="noopener">${category}</a> <span>(${filteredPosts.length})</span></h3>`;
-        html += `<ol class="sitemap-list">`;
-
-        // Sort artikel A-Z
-        filteredPosts.sort((a, b) => a.title.localeCompare(b.title));
-
-        filteredPosts.forEach((post) => {
-          html += `<li>
-            <a href="${post.url}" target="_blank" rel="noopener">${post.title}</a>
-            <span class="sitemap-date">${post.date}</span>
-          </li>`;
-        });
-
-        html += `</ol></div>`;
-      }
-    });
-
-    if (totalVisible === 0) {
-      html = `<div class="sitemap-empty">Artikel tidak ditemukan.</div>`;
-    }
-
-    contentBox.innerHTML = html;
-  }
-
-  // 4. Fitur Filter / Pencarian Live
-  window.filterSitemapPosts = function () {
-    const searchInput = document.getElementById('sitemap-search');
-    const query = searchInput ? searchInput.value : '';
-    displaySitemap(query);
-  };
-
-  // 5. Recursive Fetcher (Paging Otomatis untuk >500 Artikel)
-  window.fetchBloggerFeed = function (data) {
-    const entries = data.feed.entry || [];
-    allEntries = allEntries.concat(entries);
-
-    const totalResults = parseInt(data.feed.openSearch$totalResults.$t, 10);
-    const startIndex = parseInt(data.feed.openSearch$startIndex.$t, 10);
-    const itemsPerPage = parseInt(data.feed.openSearch$itemsPerPage.$t, 10);
-
-    // Render secara bertahap saat data masuk
-    renderSitemapUI();
-
-    // Jika masih ada sisa artikel, ambil halaman berikutnya secara otomatis
-    if (startIndex + itemsPerPage <= totalResults) {
-      const nextIndex = startIndex + itemsPerPage;
-      loadFeedScript(nextIndex);
-    }
-  };
-
-  function loadFeedScript(startIndex = 1) {
-    const currentDomain = window.location.origin;
-    const script = document.createElement('script');
-    script.src = `${currentDomain}/feeds/posts/summary?alt=json-in-script&start-index=${startIndex}&max-results=500&callback=fetchBloggerFeed`;
-    document.body.appendChild(script);
-  }
-
-  // Inisialisasi saat DOM SIAP
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => loadFeedScript(1));
+  // Jika masih ada data berikutnya, panggil lagi
+  if (startIndex + itemsPerPage <= totalResults) {
+    var nextIndex = startIndex + itemsPerPage;
+    loadFeedScript(nextIndex);
   } else {
+    // Semua data sudah terkumpul, render ke halaman
+    renderSitemapUI(allEntries);
+  }
+};
+
+function renderSitemapUI(entries) {
+  var container = document.getElementById('sitemap-container');
+  if (!container) return;
+
+  if (entries.length === 0) {
+    container.innerHTML = '<p>Tidak ada artikel ditemukan.</p>';
+    return;
+  }
+
+  // Kelompokkan berdasarkan Kategori
+  var categories = {};
+  for (var i = 0; i < entries.length; i++) {
+    var entry = entries[i];
+    var title = entry.title.$t;
+    var published = entry.published.$t.substring(0, 10);
+    var postUrl = '';
+
+    if (entry.link) {
+      for (var j = 0; j < entry.link.length; j++) {
+        if (entry.link[j].rel === 'alternate') {
+          postUrl = entry.link[j].href;
+          break;
+        }
+      }
+    }
+
+    var labels = ['Lainnya'];
+    if (entry.category && entry.category.length > 0) {
+      labels = [];
+      for (var k = 0; k < entry.category.length; k++) {
+        labels.push(entry.category[k].term);
+      }
+    }
+
+    for (var l = 0; l < labels.length; l++) {
+      var label = labels[l];
+      if (!categories[label]) categories[label] = [];
+      categories[label].push({ title: title, url: postUrl, date: published });
+    }
+  }
+
+  // Generate HTML
+  var html = '<div class="sitemap-summary"><p>Total Artikel: <strong>' + entries.length + '</strong></p></div>';
+  var sortedCategories = Object.keys(categories).sort();
+
+  for (var c = 0; c < sortedCategories.length; c++) {
+    var cat = sortedCategories[c];
+    html += '<div class="sitemap-category-box">';
+    html += '<h3 class="sitemap-cat-title"><a href="/search/label/' + encodeURIComponent(cat) + '">' + cat + '</a> (' + categories[cat].length + ')</h3>';
+    html += '<ol class="sitemap-list">';
+
+    categories[cat].sort(function (a, b) {
+      return a.title.localeCompare(b.title);
+    });
+
+    for (var p = 0; p < categories[cat].length; p++) {
+      var item = categories[cat][p];
+      html += '<li><a href="' + item.url + '" target="_blank" rel="noopener">' + item.title + '</a> <span class="sitemap-date">(' + item.date + ')</span></li>';
+    }
+
+    html += '</ol></div>';
+  }
+
+  container.innerHTML = html;
+}
+
+function loadFeedScript(startIndex) {
+  var script = document.createElement('script');
+  script.src = '/feeds/posts/summary?alt=json-in-script&start-index=' + startIndex + '&max-results=500&callback=fetchBloggerFeed';
+  document.body.appendChild(script);
+}
+
+// Inisialisasi Otomatis
+(function () {
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
     loadFeedScript(1);
+  } else {
+    document.addEventListener('DOMContentLoaded', function () {
+      loadFeedScript(1);
+    });
   }
 })();
