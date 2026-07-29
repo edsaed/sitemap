@@ -43,5 +43,5 @@ Sitemap (Daftar Isi) interaktif, cepat, dan SEO-friendly untuk platform Blogger.
   .sitemap-empty { padding: 20px; text-align: center; color: #6b7280; }
 </style>
 
-<!-- Load Script Sitemap Universal -->
-<script src="[https://cdn.jsdelivr.net/gh/edsaed/sitemap@main/sitemap.js](https://cdn.jsdelivr.net/gh/edsaed/sitemap@main/sitemap.js)"></script>
+<!-- Load Script Sitemap Universal (Cloudflare CDN) -->
+<script src="[https://sitemap.edsaed.workers.dev/sitemap.js](https://sitemap.edsaed.workers.dev/sitemap.js)"></script>
