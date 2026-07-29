@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sitemap CDN Aktif - EDSAED</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* Reset & Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* Gradasi Ungu ke Biru */
+      background: linear-gradient(135deg, #4f46e5, #7c3aed, #2563eb);
+      background-size: 200% 200%;
+      animation: gradientMove 10s ease infinite;
+      color: #ffffff;
+      padding: 20px;
+    }
+
+    /* Animasi pergerakan gradasi */
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Efek Glassmorphism Utama */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 40px 30px;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .glass-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .glass-card h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    .glass-card p {
+      font-size: 14px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    /* Tombol Glassmorphism */
+    .btn {
+      display: inline-block;
+      text-decoration: none;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 12px 24px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Elemen dekorasi tambahan (lingkaran blur di background) */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      z-index: -1;
+      opacity: 0.6;
+    }
+    
+    .blob.one {
+      width: 200px;
+      height: 200px;
+      background: #ff7eb3;
+      top: 10%;
+      left: 20%;
+    }
+
+    .blob.two {
+      width: 250px;
+      height: 250px;
+      background: #00f2fe;
+      bottom: 10%;
+      right: 20%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Dekorasi Background -->
+  <div class="blob one"></div>
+  <div class="blob two"></div>
+
+  <!-- Kartu Glassmorphism -->
+  <div class="glass-card">
+    <h1>🚀 CDN Aktif</h1>
+    <p>Server khusus untuk script <strong>sitemap.js</strong> telah berjalan dengan baik di infrastruktur Cloudflare Pages.</p>
+    <a href="https://www.edsaed.eu.org" class="btn" target="_blank" rel="noopener">Kunjungi Blog Utama</a>
+  </div>
+
+</body>
+</html>
