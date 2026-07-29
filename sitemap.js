@@ -1,45 +1,44 @@
 /**
- * Universal HTML Sitemap for Blogger
- * Repo: https://github.com/edsaed/sitemap
+ * Universal & Responsive HTML Sitemap for Blogger
+ * Repository: https://github.com/edsaed/sitemap
  */
 
-var allEntries = [];
+var allSitemapEntries = [];
+var sitemapCategories = {};
 
-// Callback Global untuk Feed Blogger
-window.fetchBloggerFeed = function (data) {
+// Callback Global Resmi
+window.renderBloggerSitemap = function (data) {
   var container = document.getElementById('sitemap-container');
   if (!container) return;
 
-  var entries = (data.feed && data.feed.entry) ? data.feed.entry : [];
-  allEntries = allEntries.concat(entries);
+  var entries = (data && data.feed && data.feed.entry) ? data.feed.entry : [];
+  allSitemapEntries = allSitemapEntries.concat(entries);
 
   var totalResults = parseInt(data.feed.openSearch$totalResults.$t, 10);
   var startIndex = parseInt(data.feed.openSearch$startIndex.$t, 10);
   var itemsPerPage = parseInt(data.feed.openSearch$itemsPerPage.$t, 10);
 
-  // Jika masih ada data berikutnya, panggil lagi
+  // Ambil sisa halaman feed jika ada > 500 post
   if (startIndex + itemsPerPage <= totalResults) {
-    var nextIndex = startIndex + itemsPerPage;
-    loadFeedScript(nextIndex);
+    loadFeedNextPage(startIndex + itemsPerPage);
   } else {
-    // Semua data sudah terkumpul, render ke halaman
-    renderSitemapUI(allEntries);
+    initSitemapUI();
   }
 };
 
-function renderSitemapUI(entries) {
+function initSitemapUI() {
   var container = document.getElementById('sitemap-container');
   if (!container) return;
 
-  if (entries.length === 0) {
-    container.innerHTML = '<p>Tidak ada artikel ditemukan.</p>';
+  if (allSitemapEntries.length === 0) {
+    container.innerHTML = '<p class="sitemap-empty">Tidak ada artikel ditemukan.</p>';
     return;
   }
 
-  // Kelompokkan berdasarkan Kategori
-  var categories = {};
-  for (var i = 0; i < entries.length; i++) {
-    var entry = entries[i];
+  // Olah Data Kategori
+  sitemapCategories = {};
+  for (var i = 0; i < allSitemapEntries.length; i++) {
+    var entry = allSitemapEntries[i];
     var title = entry.title.$t;
     var published = entry.published.$t.substring(0, 10);
     var postUrl = '';
@@ -63,49 +62,87 @@ function renderSitemapUI(entries) {
 
     for (var l = 0; l < labels.length; l++) {
       var label = labels[l];
-      if (!categories[label]) categories[label] = [];
-      categories[label].push({ title: title, url: postUrl, date: published });
+      if (!sitemapCategories[label]) sitemapCategories[label] = [];
+      sitemapCategories[label].push({ title: title, url: postUrl, date: published });
     }
   }
 
-  // Generate HTML
-  var html = '<div class="sitemap-summary"><p>Total Artikel: <strong>' + entries.length + '</strong></p></div>';
-  var sortedCategories = Object.keys(categories).sort();
+  // Render Layout Utama dengan Fitur Search
+  var controlsHtml = '<div class="sitemap-controls">';
+  controlsHtml += '<input type="text" id="sitemap-search" placeholder="Cari artikel..." onkeyup="window.filterSitemapPosts()" />';
+  controlsHtml += '<span class="sitemap-stats">Total: <strong>' + allSitemapEntries.length + '</strong> Artikel | <strong>' + Object.keys(sitemapCategories).length + '</strong> Kategori</span>';
+  controlsHtml += '</div>';
+  controlsHtml += '<div id="sitemap-content"></div>';
+
+  container.innerHTML = controlsHtml;
+  displaySitemapList('');
+}
+
+function displaySitemapList(filterText) {
+  var contentBox = document.getElementById('sitemap-content');
+  if (!contentBox) return;
+
+  var html = '';
+  var sortedCategories = Object.keys(sitemapCategories).sort();
+  var totalVisible = 0;
 
   for (var c = 0; c < sortedCategories.length; c++) {
     var cat = sortedCategories[c];
-    html += '<div class="sitemap-category-box">';
-    html += '<h3 class="sitemap-cat-title"><a href="/search/label/' + encodeURIComponent(cat) + '">' + cat + '</a> (' + categories[cat].length + ')</h3>';
-    html += '<ol class="sitemap-list">';
+    var posts = sitemapCategories[cat];
+    var filteredPosts = [];
 
-    categories[cat].sort(function (a, b) {
-      return a.title.localeCompare(b.title);
-    });
-
-    for (var p = 0; p < categories[cat].length; p++) {
-      var item = categories[cat][p];
-      html += '<li><a href="' + item.url + '" target="_blank" rel="noopener">' + item.title + '</a> <span class="sitemap-date">(' + item.date + ')</span></li>';
+    for (var p = 0; p < posts.length; p++) {
+      if (posts[p].title.toLowerCase().indexOf(filterText.toLowerCase()) !== -1) {
+        filteredPosts.push(posts[p]);
+      }
     }
 
-    html += '</ol></div>';
+    if (filteredPosts.length > 0) {
+      totalVisible += filteredPosts.length;
+      html += '<div class="sitemap-category-box">';
+      html += '<h3 class="sitemap-cat-title"><a href="/search/label/' + encodeURIComponent(cat) + '" target="_blank">' + cat + '</a> <span>(' + filteredPosts.length + ')</span></h3>';
+      html += '<ol class="sitemap-list">';
+
+      filteredPosts.sort(function (a, b) {
+        return a.title.localeCompare(b.title);
+      });
+
+      for (var f = 0; f < filteredPosts.length; f++) {
+        var item = filteredPosts[f];
+        html += '<li><a href="' + item.url + '" target="_blank" rel="noopener">' + item.title + '</a> <span class="sitemap-date">(' + item.date + ')</span></li>';
+      }
+
+      html += '</ol></div>';
+    }
   }
 
-  container.innerHTML = html;
+  if (totalVisible === 0) {
+    html = '<div class="sitemap-empty">Artikel yang Anda cari tidak ditemukan.</div>';
+  }
+
+  contentBox.innerHTML = html;
 }
 
-function loadFeedScript(startIndex) {
+// Global Filter Handler
+window.filterSitemapPosts = function () {
+  var input = document.getElementById('sitemap-search');
+  var query = input ? input.value : '';
+  displaySitemapList(query);
+};
+
+function loadFeedNextPage(startIndex) {
   var script = document.createElement('script');
-  script.src = '/feeds/posts/summary?alt=json-in-script&start-index=' + startIndex + '&max-results=500&callback=fetchBloggerFeed';
+  script.src = '/feeds/posts/summary?alt=json-in-script&start-index=' + startIndex + '&max-results=500&callback=renderBloggerSitemap';
   document.body.appendChild(script);
 }
 
 // Inisialisasi Otomatis
 (function () {
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    loadFeedScript(1);
+    loadFeedNextPage(1);
   } else {
     document.addEventListener('DOMContentLoaded', function () {
-      loadFeedScript(1);
+      loadFeedNextPage(1);
     });
   }
 })();
