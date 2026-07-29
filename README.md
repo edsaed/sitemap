@@ -45,4 +45,3 @@ Sitemap (Daftar Isi) interaktif, cepat, dan SEO-friendly untuk platform Blogger.
 
 <!-- Load Script Sitemap Universal (Cloudflare CDN) -->
 <script src="https://sitemap.edsaed.workers.dev/sitemap.js"></script>
-<script src="https://raw.githack.com/edsaed/sitemap/main/sitemap.js"></script>
