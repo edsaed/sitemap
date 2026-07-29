@@ -44,4 +44,4 @@ Sitemap (Daftar Isi) interaktif, cepat, dan SEO-friendly untuk platform Blogger.
 </style>
 
 <!-- Load Script Sitemap Universal -->
-<script src="[https://cdn.jsdelivr.net/gh/edsaed/sitemap@main/sitemap.js?v=1.0](https://cdn.jsdelivr.net/gh/edsaed/sitemap@main/sitemap.js?v=1.0)"></script>
+<script src="[https://cdn.jsdelivr.net/gh/edsaed/sitemap@main/sitemap.js](https://cdn.jsdelivr.net/gh/edsaed/sitemap@main/sitemap.js)"></script>
